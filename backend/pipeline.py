@@ -67,18 +67,29 @@ class PipelineEngine:
             text = inp.raw_content
             lower_text = text.lower()
             
-            # --- Symptoms & Urgency ---
+            # --- Symptoms & Urgency (English + Indic Multilingual Support) ---
             symptom_keywords = [
                 ("chest pain", "Chest Pain", "Severe anterior pressure"),
+                ("छाती में", "Chest Pain", "Severe anterior pressure (छाती में दर्द)"),
+                ("छातीत", "Chest Pain", "Severe anterior pressure (छातीत वेदना)"),
                 ("sweating", "Diaphoresis", "Profuse cold sweat"),
+                ("पसीना", "Diaphoresis", "Profuse cold sweat (पसीना)"),
+                ("घाम", "Diaphoresis", "Profuse cold sweat (घाम)"),
                 ("collapsed", "Syncope / Collapse", "Sudden unresponsiveness"),
+                ("बेहोश", "Syncope / Collapse", "Sudden unresponsiveness (बेहोश)"),
                 ("fever", "Pyrexia / Fever", "Body temperature elevated"),
+                ("बुखार", "Pyrexia / Fever", "Body temperature elevated (बुखार)"),
+                ("ताप", "Pyrexia / Fever", "Body temperature elevated (ताप)"),
                 ("103", "High Fever (103°F)", "High fever reading"),
                 ("shortness of breath", "Dyspnea", "Breathing difficulty"),
+                ("सांस", "Dyspnea", "Breathing difficulty (सांस फूलना)"),
+                ("श्वास", "Dyspnea", "Breathing difficulty (श्वास त्रास)"),
                 ("bleeding", "Active Hemorrhage", "Visible bleeding"),
+                ("खून", "Active Hemorrhage", "Visible bleeding (खून / रक्तस्त्राव)"),
                 ("head injury", "Head Trauma", "Impact to cranial region"),
                 ("fracture", "Suspected Fracture", "Deformity / acute limb pain"),
                 ("vomiting", "Vomiting", "Emesis"),
+                ("उल्टी", "Vomiting", "Emesis (उल्टी)"),
                 ("chills", "Rigors / Chills", "Shivering with fever")
             ]
             for kw, formal_name, desc in symptom_keywords:

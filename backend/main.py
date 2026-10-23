@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,7 +36,7 @@ else:
     print("Notice: No GEMINI_API_KEY detected. Running in deterministic Zero-Key Demo Mode.")
 
 @app.get("/health")
-def health_check():
+async def health_check():
     return {
         "status": "healthy",
         "service": "LifeLine Emergency Intelligence API",
@@ -46,9 +47,10 @@ def health_check():
     }
 
 @app.post("/api/pipeline/run", response_model=PipelineResult)
-def run_pipeline(payload: IngestPayload):
+async def run_pipeline(payload: IngestPayload):
     try:
-        result = PipelineEngine.run_pipeline(payload, gemini_client=gemini_client)
+        # Offload CPU-bound inference/parsing to threadpool for non-blocking asynchronous event loop
+        result = await asyncio.to_thread(PipelineEngine.run_pipeline, payload, gemini_client)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Pipeline processing failed: {str(e)}")

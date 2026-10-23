@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Sparkles, Mic, MicOff, Image, FileText, Send, Zap, 
-  HelpCircle, Compass, ShieldAlert, ArrowUpRight, CloudRain
+  ArrowUpRight
 } from 'lucide-react';
 
 export function IngestStation({ onRunCase, isProcessing, presets = [], currentLang = "en" }) {

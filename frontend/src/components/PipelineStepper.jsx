@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Layers, Cpu, ShieldCheck, Activity, Send, CheckCircle2, ChevronRight, AlertCircle
+  Layers, Cpu, ShieldCheck, Activity, Send, CheckCircle2, AlertCircle
 } from 'lucide-react';
 
 const STAGES = [

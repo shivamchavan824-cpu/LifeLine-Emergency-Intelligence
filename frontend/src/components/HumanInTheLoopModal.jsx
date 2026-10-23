@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
-  ShieldAlert, HelpCircle, AlertCircle, FileCheck, Trash2, 
-  CheckCircle, Database, GitCompare
+  HelpCircle, AlertCircle, FileCheck, Trash2, 
+  Database, GitCompare
 } from 'lucide-react';
 
 export function HumanInTheLoopModal({ 

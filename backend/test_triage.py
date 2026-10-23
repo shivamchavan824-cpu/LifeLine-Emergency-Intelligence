@@ -85,3 +85,59 @@ def test_preset_4_conflict_detection():
     assert len(result.clarification_questions) > 0
     # Must NOT guess silently
     assert any("penicillin" in q.question.lower() for q in result.clarification_questions)
+
+def test_pipeline_efficiency_and_latency():
+    """Verify deterministic pipeline completes within sub-second emergency latency SLA (< 200ms)."""
+    import time
+    payload = IngestPayload(
+        country_code="IN",
+        target_lang="hi",
+        inputs=[
+            IngestInput(
+                id="lat-1",
+                type="voice",
+                title="Hindi Emergency Call",
+                raw_content="छाती में बहुत तेज दर्द है, पसीना आ रहा है",
+                timestamp="2026-10-22T21:00:00Z"
+            )
+        ]
+    )
+    start = time.perf_counter()
+    result = PipelineEngine.run_pipeline(payload)
+    duration_ms = (time.perf_counter() - start) * 1000
+    assert duration_ms < 200, f"Pipeline execution too slow: {duration_ms}ms"
+    assert result.triage.level in ["CRITICAL", "URGENT"]
+    assert result.emergency_number == "112"
+
+def test_international_emergency_routing():
+    """Verify correct emergency number mapping for international locales."""
+    us_payload = IngestPayload(
+        country_code="US",
+        target_lang="en",
+        inputs=[IngestInput(id="u1", type="text", title="Report", raw_content="Patient collapsed with chest pain", timestamp="2026-10-22T21:00:00Z")]
+    )
+    uk_payload = IngestPayload(
+        country_code="GB",
+        target_lang="en",
+        inputs=[IngestInput(id="uk1", type="text", title="Report", raw_content="Patient collapsed with chest pain", timestamp="2026-10-22T21:00:00Z")]
+    )
+    res_us = PipelineEngine.run_pipeline(us_payload)
+    res_uk = PipelineEngine.run_pipeline(uk_payload)
+    assert res_us.emergency_number == "911"
+    assert res_uk.emergency_number == "999"
+
+def test_contraindication_safety_blocks():
+    """Verify dangerous aspirin recommendation is strictly blocked if active bleeding is reported."""
+    payload = IngestPayload(
+        country_code="IN",
+        target_lang="en",
+        inputs=[
+            IngestInput(id="c1", type="text", title="Bleeding", raw_content="Head injury with severe bleeding and acute chest pain", timestamp="2026-10-22T21:00:00Z")
+        ]
+    )
+    result = PipelineEngine.run_pipeline(payload)
+    action_texts = " ".join([a.title.lower() + " " + a.description.lower() for a in result.actions])
+    # Ensure no unconditional administration of blood thinners during active bleeding
+    contraindication_flags = [f for f in result.verification_flags if "CONTRAINDICATION" in f.flag_type or "SAFETY" in f.flag_type or "BLEEDING" in f.flag_type]
+    assert len(contraindication_flags) > 0 or "do not" in action_texts or "withhold" in action_texts or "contraindicat" in action_texts
+

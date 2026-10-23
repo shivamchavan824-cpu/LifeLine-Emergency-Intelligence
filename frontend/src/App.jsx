@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
-  HeartPulse, Shield, Globe, RotateCcw, AlertOctagon, 
-  Activity, CheckCircle2, ChevronRight, PhoneCall, Sparkles
+  HeartPulse, RotateCcw, AlertOctagon
 } from 'lucide-react';
 import { PipelineStepper } from './components/PipelineStepper';
 import { IngestStation } from './components/IngestStation';
 import { HumanInTheLoopModal } from './components/HumanInTheLoopModal';
 import { ActionSuite } from './components/ActionSuite';
-import { translations } from './i18n';
 
 export default function App() {
   const [lang, setLang] = useState('en');
@@ -17,24 +15,7 @@ export default function App() {
   const [activeStage, setActiveStage] = useState('act');
   const [activePresetTitle, setActivePresetTitle] = useState('');
 
-  const t = translations[lang] || translations.en;
-
-  useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/presets')
-      .then(res => res.json())
-      .then(data => {
-        setPresets(data);
-        // Automatically pre-load Preset 1 for immediate demo visual appeal
-        if (data && data.length > 0 && !pipelineResult) {
-          handleRunCase(data[0].inputs, data[0].title);
-        }
-      })
-      .catch(err => {
-        console.warn("Could not reach backend presets, loading fallback", err);
-      });
-  }, []);
-
-  const handleRunCase = async (inputs, presetTitle = '') => {
+  const handleRunCase = useCallback(async (inputs, presetTitle = '') => {
     setIsProcessing(true);
     setActivePresetTitle(presetTitle);
     setActiveStage('extract');
@@ -60,7 +41,24 @@ export default function App() {
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [lang]);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch('http://127.0.0.1:8000/api/presets')
+      .then(res => res.json())
+      .then(data => {
+        if (!isMounted) return;
+        setPresets(data);
+        if (data && data.length > 0 && !pipelineResult) {
+          handleRunCase(data[0].inputs, data[0].title);
+        }
+      })
+      .catch(err => {
+        console.warn("Could not reach backend presets, loading fallback", err);
+      });
+    return () => { isMounted = false; };
+  }, [handleRunCase, pipelineResult]);
 
   const handleResolveQuestion = (questionId, selectedOption) => {
     if (!pipelineResult) return;

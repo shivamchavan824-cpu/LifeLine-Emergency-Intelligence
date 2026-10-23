@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   PhoneCall, Copy, Check, Printer, Clock, ChevronDown, 
-  ChevronUp, AlertCircle, ShieldAlert, ArrowRight, MapPin, Hospital, Activity
+  ChevronUp, AlertCircle, Activity
 } from 'lucide-react';
 
 export function ActionSuite({ 
@@ -12,7 +12,7 @@ export function ActionSuite({
   hospitals = [], 
   warnings = [],
   emergencyNumber = "112",
-  lang = "en"
+  _lang = "en"
 }) {
   const [copied, setCopied] = useState(false);
   const [expandedWhy, setExpandedWhy] = useState({});
